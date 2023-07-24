@@ -12,9 +12,11 @@ def symbols_from_module(module, path, root):
             case ast.AnnAssign():
                 yield (node.target.id, path_to_mod(path, root))  # type: ignore
             case ast.ImportFrom():
+                # Mimicks imports, instead of importing from the current module.
                 for n in node.names:
                     yield (n.name, node.module)
             case ast.Import():
+                # TODO: Not always we want to import from imports.
                 continue
                 for n in node.names:
                     yield (n.name, path_to_mod(path, root))
