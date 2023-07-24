@@ -10,6 +10,8 @@ import autoflake
 from pyflakes.messages import UndefinedExport, UndefinedName, UnusedImport
 from pyprojroot import here
 
+from .search import search_project_imports
+
 common_statements: Dict[str, str] = {
     "ABC": "from abc import ABC",
     "abstractmethod": "from abc import abstractmethod",
@@ -356,14 +358,18 @@ class SourceCode:  # noqa: R090
             import_string: String required to import the package.
         """
         # Find the package name
+        project_dir = here()
         try:
-            project_package = os.path.basename(here()).replace("-", "_")
+            project_package = os.path.basename(project_dir).replace("-", "_")
         except RuntimeError:  # pragma: no cover
             # I don't know how to make a test that raises it :(
             # To manually reproduce, follow the steps of
             # https://github.com/lyz-code/autoimport/issues/131
             return None
         package_objects = extract_package_objects(project_package)
+
+        if not package_objects or name not in package_objects:
+            return search_project_imports(project_dir, name)
 
         # nocover: as the tests are run inside the autoimport virtualenv, it will
         # always find the objects on that package
