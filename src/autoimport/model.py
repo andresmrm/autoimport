@@ -101,15 +101,17 @@ class SourceCode:  # noqa: R090
         docstring_type: Optional[str] = None
 
         for line in source_lines:
-            if re.match(r'"{3}.*"{3}', line):
+            if re.match(r'"{3}.*"{3}', line) or re.match(r"'{3}.*'{3}", line):
                 # Match single line docstrings.
                 self.header.append(line)
                 break
 
-            if docstring_type == "start_multiple_lines" and re.match(r'""" ?', line):
+            if docstring_type == "start_multiple_lines" and re.match(
+                r'(""")|(\'\'\') ?', line
+            ):
                 # Match end of multiple line docstrings
                 docstring_type = "multiple_lines"
-            elif re.match(r'"{3}.*', line):
+            elif re.match(r'"{3}.*', line) or re.match(r"'{3}.*", line):
                 # Match multiple line docstrings start
                 docstring_type = "start_multiple_lines"
             elif re.match(r"#.*", line) or line == "":
